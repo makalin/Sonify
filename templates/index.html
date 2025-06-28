@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Sonify - Spotify Data Visualizer{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-3 fw-bold mb-4">
+        <i class="fas fa-music text-primary me-3"></i>
+        Your Music, Visualized
+    </h1>
+    <p class="lead mb-4">
+        Connect your Spotify account and discover beautiful insights about your listening habits. 
+        From heatmaps to genre breakdowns, see your music data like never before.
+    </p>
+    
+    {% if not session.get('token_info') %}
+        <a href="{{ url_for('login') }}" class="btn btn-spotify btn-lg">
+            <i class="fab fa-spotify me-2"></i>
+            Connect with Spotify
+        </a>
+    {% else %}
+        <a href="{{ url_for('dashboard') }}" class="btn btn-spotify btn-lg">
+            <i class="fas fa-chart-line me-2"></i>
+            Go to Dashboard
+        </a>
+    {% endif %}
+</div>
+
+<!-- Features Section -->
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-fire fa-3x text-danger"></i>
+                </div>
+                <h5 class="card-title">Listening Heatmaps</h5>
+                <p class="card-text">
+                    Discover when you listen most with beautiful heatmaps that show your daily listening patterns.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-chart-pie fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Genre & Artist Breakdowns</h5>
+                <p class="card-text">
+                    See your top genres, artists, and tracks in vibrant, interactive charts and graphs.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-share-alt fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Share-Ready Exports</h5>
+                <p class="card-text">
+                    Download or share your data visualizations on social media with beautiful, high-quality exports.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">How It Works</h2>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="text-center">
+            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                <span class="fw-bold">1</span>
+            </div>
+            <h6>Connect</h6>
+            <p class="small">Link your Spotify account securely</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="text-center">
+            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                <span class="fw-bold">2</span>
+            </div>
+            <h6>Analyze</h6>
+            <p class="small">We analyze your listening data</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="text-center">
+            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                <span class="fw-bold">3</span>
+            </div>
+            <h6>Visualize</h6>
+            <p class="small">Create beautiful visualizations</p>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="text-center">
+            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                <span class="fw-bold">4</span>
+            </div>
+            <h6>Share</h6>
+            <p class="small">Export and share your insights</p>
+        </div>
+    </div>
+</div>
+
+<!-- Tech Stack Section -->
+<div class="row g-4">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Built With</h2>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fab fa-python fa-2x text-primary mb-2"></i>
+                <h6>Python + Flask</h6>
+                <p class="small">Backend framework and API integration</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fab fa-spotify fa-2x text-success mb-2"></i>
+                <h6>Spotify API</h6>
+                <p class="small">Official Spotify Web API integration</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x text-info mb-2"></i>
+                <h6>Plotly + D3.js</h6>
+                <p class="small">Interactive and beautiful visualizations</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

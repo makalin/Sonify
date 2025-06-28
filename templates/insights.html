@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Music Insights - Sonify{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold mb-3">
+        <i class="fas fa-chart-pie text-primary me-3"></i>
+        Your Music Insights
+    </h1>
+    <p class="lead">
+        Deep dive into your listening patterns, genre preferences, and music discovery habits.
+    </p>
+</div>
+
+<!-- Key Statistics -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="stats-card pulse">
+            <div class="stats-number">{{ insights.artist_diversity.unique_artists if insights.artist_diversity else 0 }}</div>
+            <div class="stats-label">Unique Artists</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card pulse">
+            <div class="stats-number">{{ insights.artist_diversity.total_tracks if insights.artist_diversity else 0 }}</div>
+            <div class="stats-label">Total Tracks</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card pulse">
+            <div class="stats-number">{{ "%.1f"|format(insights.artist_diversity.diversity_score * 100) if insights.artist_diversity else 0 }}%</div>
+            <div class="stats-label">Diversity Score</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card pulse">
+            <div class="stats-number">{{ insights.playlist_count if insights.playlist_count else 0 }}</div>
+            <div class="stats-label">Playlists</div>
+        </div>
+    </div>
+</div>
+
+<!-- Genre Analysis -->
+{% if insights.top_genres %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">
+                    <i class="fas fa-tags me-2"></i>Your Top Genres
+                </h3>
+                <div class="row g-3">
+                    {% for genre, count in insights.top_genres %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                            <span class="fw-medium">{{ genre|title }}</span>
+                            <span class="badge bg-primary">{{ count }} tracks</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Listening Patterns -->
+{% if patterns %}
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-clock me-2"></i>Listening Patterns
+                </h5>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Most Active Hour:</strong> {{ patterns.most_active_hour }}:00
+                    </li>
+                    <li class="mb-2">
+                        <strong>Most Active Day:</strong> {{ patterns.most_active_day }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Total Sessions:</strong> {{ patterns.total_sessions }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Avg Sessions/Day:</strong> {{ patterns.avg_sessions_per_day }}
+                    </li>
+                    <li class="mb-2">
+                        <strong>Time Range:</strong> {{ patterns.time_range_days }} days
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line me-2"></i>Listening Insights
+                </h5>
+                <div class="mb-3">
+                    <label class="form-label">Your Listening Diversity</label>
+                    <div class="progress" style="height: 20px;">
+                        {% set diversity = insights.artist_diversity.diversity_score * 100 if insights.artist_diversity else 0 %}
+                        <div class="progress-bar bg-success" style="width: {{ diversity }}%">
+                            {{ "%.1f"|format(diversity) }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% if diversity > 80 %}Excellent diversity! You explore many different artists.
+                        {% elif diversity > 60 %}Good diversity - you have varied taste.
+                        {% elif diversity > 40 %}Moderate diversity - you have some favorite artists.
+                        {% else %}You tend to stick to your favorite artists.{% endif %}
+                    </small>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Listening Consistency</label>
+                    <div class="progress" style="height: 20px;">
+                        {% set consistency = (patterns.unique_days / max(patterns.time_range_days, 1)) * 100 if patterns else 0 %}
+                        <div class="progress-bar bg-info" style="width: {{ consistency }}%">
+                            {{ "%.1f"|format(consistency) }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% if consistency > 80 %}Very consistent listener!
+                        {% elif consistency > 60 %}Regular listener.
+                        {% elif consistency > 40 %}Occasional listener.
+                        {% else %}Casual listener.{% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Playlist Analysis -->
+{% if playlists %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">
+                    <i class="fas fa-list me-2"></i>Your Playlists
+                </h3>
+                <div class="row g-3">
+                    {% for playlist in playlists[:6] %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center mb-2">
+                                    {% if playlist.images %}
+                                        <img src="{{ playlist.images[0].url }}" alt="{{ playlist.name }}" class="track-image me-2" style="width: 50px; height: 50px;">
+                                    {% else %}
+                                        <div class="bg-secondary track-image d-flex align-items-center justify-content-center me-2" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-music text-white"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <h6 class="mb-0">{{ playlist.name }}</h6>
+                                        <small class="text-muted">{{ playlist.tracks.total }} tracks</small>
+                                    </div>
+                                </div>
+                                {% if playlist.description %}
+                                    <p class="card-text small text-muted">{{ playlist.description[:100] }}{% if playlist.description|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if playlists|length > 6 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Showing 6 of {{ playlists|length }} playlists</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Music Discovery Insights -->
+<div class="row g-4 mb-5">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-compass me-2"></i>Music Discovery Style
+                </h5>
+                <div class="mb-3">
+                    {% set diversity = insights.artist_diversity.diversity_score if insights.artist_diversity else 0 %}
+                    {% if diversity > 0.8 %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-star me-2"></i>
+                            <strong>Explorer</strong> - You love discovering new artists and genres!
+                        </div>
+                    {% elif diversity > 0.6 %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-search me-2"></i>
+                            <strong>Adventurer</strong> - You enjoy exploring while staying loyal to favorites.
+                        </div>
+                    {% elif diversity > 0.4 %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-heart me-2"></i>
+                            <strong>Loyalist</strong> - You have your favorites but occasionally try new things.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            <i class="fas fa-home me-2"></i>
+                            <strong>Traditionalist</strong> - You prefer sticking to what you know and love.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-calendar me-2"></i>Listening Habits
+                </h5>
+                <div class="mb-3">
+                    {% if patterns %}
+                        {% set avg_sessions = patterns.avg_sessions_per_day %}
+                        {% if avg_sessions > 10 %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-headphones me-2"></i>
+                                <strong>Music Enthusiast</strong> - You listen to music constantly!
+                            </div>
+                        {% elif avg_sessions > 5 %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-music me-2"></i>
+                                <strong>Regular Listener</strong> - Music is a daily part of your routine.
+                            </div>
+                        {% elif avg_sessions > 2 %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-play me-2"></i>
+                                <strong>Casual Listener</strong> - You enjoy music when you have time.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                <i class="fas fa-volume-down me-2"></i>
+                                <strong>Occasional Listener</strong> - You listen to music occasionally.
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">
+                    <i class="fas fa-lightbulb me-2"></i>Personalized Recommendations
+                </h3>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6>Based on Your Listening Patterns:</h6>
+                        <ul class="list-unstyled">
+                            {% if patterns and patterns.most_active_hour < 12 %}
+                                <li><i class="fas fa-sun text-warning me-2"></i>Try morning playlists to start your day</li>
+                            {% elif patterns and patterns.most_active_hour > 18 %}
+                                <li><i class="fas fa-moon text-info me-2"></i>Evening relaxation playlists might suit you</li>
+                            {% endif %}
+                            
+                            {% if insights.artist_diversity and insights.artist_diversity.diversity_score < 0.5 %}
+                                <li><i class="fas fa-compass text-primary me-2"></i>Explore similar artists to your favorites</li>
+                            {% else %}
+                                <li><i class="fas fa-globe text-success me-2"></i>Try international music from different cultures</li>
+                            {% endif %}
+                            
+                            {% if insights.top_genres %}
+                                <li><i class="fas fa-tags text-secondary me-2"></i>Discover subgenres of {{ insights.top_genres[0][0]|title }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Music Discovery Tips:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-radio text-primary me-2"></i>Try Spotify's Discover Weekly playlist</li>
+                            <li><i class="fas fa-users text-success me-2"></i>Follow playlists from users with similar taste</li>
+                            <li><i class="fas fa-calendar-alt text-warning me-2"></i>Check out new releases in your favorite genres</li>
+                            <li><i class="fas fa-chart-line text-info me-2"></i>Explore trending tracks in your preferred genres</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4 class="mb-3">
+                    <i class="fas fa-share-alt me-2"></i>Share Your Insights
+                </h4>
+                <p class="text-muted mb-4">
+                    Share your music insights with friends and discover how your taste compares!
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-outline-spotify" onclick="shareInsights()">
+                        <i class="fas fa-share me-1"></i>Share Insights
+                    </button>
+                    <a href="{{ url_for('export_data') }}" class="btn btn-outline-spotify">
+                        <i class="fas fa-download me-1"></i>Export Data
+                    </a>
+                    <a href="{{ url_for('mood_analysis') }}" class="btn btn-outline-spotify">
+                        <i class="fas fa-brain me-1"></i>Mood Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Share insights
+function shareInsights() {
+    const text = "🎵 Check out my music insights on Sonify!";
+    const url = window.location.href;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Music Insights',
+            text: text,
+            url: url
+        });
+    } else {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
+            alert('Insights link copied to clipboard!');
+        });
+    }
+}
+
+// Add some interactive features
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to genre cards
+    const genreCards = document.querySelectorAll('.bg-light');
+    genreCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Add click to copy functionality for statistics
+    const statCards = document.querySelectorAll('.stats-card');
+    statCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const number = this.querySelector('.stats-number').textContent;
+            const label = this.querySelector('.stats-label').textContent;
+            
+            navigator.clipboard.writeText(`${label}: ${number}`).then(() => {
+                // Show a brief tooltip
+                const tooltip = document.createElement('div');
+                tooltip.textContent = 'Copied!';
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: var(--spotify-green);
+                    color: white;
+                    padding: 0.5rem;
+                    border-radius: 5px;
+                    font-size: 0.8rem;
+                    z-index: 1000;
+                    pointer-events: none;
+                `;
+                
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = rect.left + 'px';
+                tooltip.style.top = (rect.top - 40) + 'px';
+                
+                document.body.appendChild(tooltip);
+                
+                setTimeout(() => {
+                    tooltip.remove();
+                }, 1000);
+            });
+        });
+        
+        card.style.cursor = 'pointer';
+    });
+});
+</script>
+{% endblock %} 

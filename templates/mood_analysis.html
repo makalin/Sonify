@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Mood Analysis - Sonify{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold mb-3">
+        <i class="fas fa-brain text-primary me-3"></i>
+        Your Music Mood Profile
+    </h1>
+    <p class="lead">
+        Discover what your music choices reveal about your personality and mood preferences.
+    </p>
+</div>
+
+<!-- Mood Radar Chart -->
+{% if mood_chart %}
+<div class="chart-container">
+    <h3 class="mb-4">
+        <i class="fas fa-chart-radar me-2"></i>Your Music Personality Radar
+    </h3>
+    <p class="text-muted mb-3">
+        This radar chart shows your preferences across different musical characteristics.
+    </p>
+    <div id="mood-radar-chart" style="height: 500px;"></div>
+</div>
+{% endif %}
+
+<!-- Mood Insights -->
+{% if mood_insights %}
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="fas fa-lightbulb me-2"></i>What Your Music Says About You
+        </h3>
+    </div>
+    
+    {% for key, insight in mood_insights.items() %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    {% if key == 'energy' %}
+                        <i class="fas fa-bolt fa-2x text-warning me-3"></i>
+                    {% elif key == 'mood' %}
+                        <i class="fas fa-smile fa-2x text-success me-3"></i>
+                    {% elif key == 'dance' %}
+                        <i class="fas fa-music fa-2x text-primary me-3"></i>
+                    {% elif key == 'acoustic' %}
+                        <i class="fas fa-guitar fa-2x text-info me-3"></i>
+                    {% else %}
+                        <i class="fas fa-chart-line fa-2x text-secondary me-3"></i>
+                    {% endif %}
+                    <h5 class="card-title mb-0">
+                        {% if key == 'energy' %}Energy Level
+                        {% elif key == 'mood' %}Mood Preference
+                        {% elif key == 'dance' %}Danceability
+                        {% elif key == 'acoustic' %}Acoustic Preference
+                        {% else %}{{ key|title }}{% endif %}
+                    </h5>
+                </div>
+                <p class="card-text">{{ insight }}</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Audio Features Breakdown -->
+{% if features_summary %}
+<div class="row g-4 mb-5">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="fas fa-sliders-h me-2"></i>Audio Features Breakdown
+        </h3>
+    </div>
+    
+    {% for feature, value in features_summary.items() %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h6 class="card-title text-muted mb-3">
+                    {% if feature == 'danceability' %}Danceability
+                    {% elif feature == 'energy' %}Energy
+                    {% elif feature == 'valence' %}Happiness
+                    {% elif feature == 'tempo' %}Tempo
+                    {% elif feature == 'acousticness' %}Acousticness
+                    {% elif feature == 'instrumentalness' %}Instrumentalness
+                    {% else %}{{ feature|title }}{% endif %}
+                </h6>
+                
+                {% if feature == 'tempo' %}
+                    <div class="stats-number">{{ "%.0f"|format(value) }} BPM</div>
+                {% else %}
+                    <div class="stats-number">{{ "%.1f"|format(value * 100) }}%</div>
+                {% endif %}
+                
+                <div class="progress mt-3" style="height: 8px;">
+                    {% if feature == 'tempo' %}
+                        {% set progress = ((value - 50) / 150) * 100 %}
+                    {% else %}
+                        {% set progress = value * 100 %}
+                    {% endif %}
+                    <div class="progress-bar bg-success" style="width: {{ progress }}%"></div>
+                </div>
+                
+                <small class="text-muted mt-2 d-block">
+                    {% if feature == 'danceability' %}
+                        {% if value > 0.7 %}Very danceable
+                        {% elif value > 0.4 %}Somewhat danceable
+                        {% else %}Not very danceable{% endif %}
+                    {% elif feature == 'energy' %}
+                        {% if value > 0.7 %}High energy
+                        {% elif value > 0.4 %}Moderate energy
+                        {% else %}Low energy{% endif %}
+                    {% elif feature == 'valence' %}
+                        {% if value > 0.7 %}Very positive
+                        {% elif value > 0.4 %}Neutral
+                        {% else %}Melancholic{% endif %}
+                    {% elif feature == 'acousticness' %}
+                        {% if value > 0.7 %}Very acoustic
+                        {% elif value > 0.4 %}Mixed
+                        {% else %}Electronic{% endif %}
+                    {% elif feature == 'instrumentalness' %}
+                        {% if value > 0.7 %}Very instrumental
+                        {% elif value > 0.4 %}Mixed
+                        {% else %}Vocal-focused{% endif %}
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Tracks with Features -->
+{% if tracks_with_features %}
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-4">
+            <i class="fas fa-list me-2"></i>Your Tracks with Audio Features
+        </h3>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Track</th>
+                        <th>Artist</th>
+                        <th>Energy</th>
+                        <th>Danceability</th>
+                        <th>Happiness</th>
+                        <th>Acousticness</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for track, features in tracks_with_features %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if track.album.images %}
+                                    <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" class="track-image me-2" style="width: 40px; height: 40px;">
+                                {% endif %}
+                                <span>{{ track.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ track.artists[0].name }}</td>
+                        <td>
+                            <div class="progress" style="height: 6px; width: 60px;">
+                                <div class="progress-bar bg-warning" style="width: {{ features.energy * 100 }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.0f"|format(features.energy * 100) }}%</small>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 6px; width: 60px;">
+                                <div class="progress-bar bg-primary" style="width: {{ features.danceability * 100 }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.0f"|format(features.danceability * 100) }}%</small>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 6px; width: 60px;">
+                                <div class="progress-bar bg-success" style="width: {{ features.valence * 100 }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.0f"|format(features.valence * 100) }}%</small>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 6px; width: 60px;">
+                                <div class="progress-bar bg-info" style="width: {{ features.acousticness * 100 }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ "%.0f"|format(features.acousticness * 100) }}%</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Share Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4 class="mb-3">
+                    <i class="fas fa-share-alt me-2"></i>Share Your Music Personality
+                </h4>
+                <p class="text-muted mb-4">
+                    Share your music mood profile with friends and discover what your music choices reveal about you!
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-outline-spotify" onclick="shareMoodProfile()">
+                        <i class="fas fa-share me-1"></i>Share Profile
+                    </button>
+                    <button class="btn btn-outline-spotify" onclick="exportMoodData()">
+                        <i class="fas fa-download me-1"></i>Export Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize mood radar chart
+document.addEventListener('DOMContentLoaded', function() {
+    {% if mood_chart %}
+    Plotly.newPlot('mood-radar-chart', JSON.parse('{{ mood_chart | safe }}').data, 
+                   JSON.parse('{{ mood_chart | safe }}').layout, {responsive: true});
+    {% endif %}
+});
+
+// Share mood profile
+function shareMoodProfile() {
+    const text = "🎵 Check out my music mood profile on Sonify!";
+    const url = window.location.href;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'My Music Mood Profile',
+            text: text,
+            url: url
+        });
+    } else {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
+            alert('Profile link copied to clipboard!');
+        });
+    }
+}
+
+// Export mood data
+function exportMoodData() {
+    // Trigger download of mood data
+    const data = {
+        features: {{ features_summary | tojson }},
+        insights: {{ mood_insights | tojson }},
+        timestamp: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sonify_mood_profile.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Update chart theme when theme changes
+function updateChartThemes(theme) {
+    const chart = document.getElementById('mood-radar-chart');
+    if (chart && chart.data) {
+        Plotly.relayout('mood-radar-chart', {
+            template: theme === 'dark' ? 'plotly_dark' : 'plotly_white'
+        });
+    }
+}
+</script>
+{% endblock %} 

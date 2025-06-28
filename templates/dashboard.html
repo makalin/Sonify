@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sonify{% endblock %}
+
+{% block content %}
+<!-- User Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex align-items-center">
+            {% if user.images %}
+                <img src="{{ user.images[0].url }}" alt="{{ user.display_name }}" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+            {% else %}
+                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                    <i class="fas fa-user fa-2x text-white"></i>
+                </div>
+            {% endif %}
+            <div>
+                <h2 class="mb-1">Welcome back, {{ user.display_name }}!</h2>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ user.country if user.country else 'Unknown location' }}
+                    {% if user.followers %}
+                        • <i class="fas fa-users me-1"></i>
+                        {{ user.followers.total }} followers
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('visualizations') }}" class="btn btn-outline-spotify">
+                        <i class="fas fa-chart-bar me-1"></i>View Charts
+                    </a>
+                    <a href="{{ url_for('mood_analysis') }}" class="btn btn-outline-spotify">
+                        <i class="fas fa-brain me-1"></i>Mood Analysis
+                    </a>
+                    <a href="{{ url_for('insights') }}" class="btn btn-outline-spotify">
+                        <i class="fas fa-chart-pie me-1"></i>Music Insights
+                    </a>
+                    <a href="{{ url_for('export_data') }}" class="btn btn-outline-spotify">
+                        <i class="fas fa-download me-1"></i>Export Data
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ top_tracks|length }}</div>
+            <div class="stats-label">Top Tracks</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ top_artists|length }}</div>
+            <div class="stats-label">Top Artists</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">{{ recent_tracks|length }}</div>
+            <div class="stats-label">Recent Tracks</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stats-label">
+                <a href="{{ url_for('visualizations') }}" class="text-white text-decoration-none">View Charts</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Listening Patterns -->
+{% if patterns %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="mb-4">
+                    <i class="fas fa-clock me-2"></i>Your Listening Patterns
+                </h3>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                <i class="fas fa-clock fa-2x"></i>
+                            </div>
+                            <h5>{{ patterns.most_active_hour }}:00</h5>
+                            <small class="text-muted">Most Active Hour</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                <i class="fas fa-calendar fa-2x"></i>
+                            </div>
+                            <h5>{{ patterns.most_active_day }}</h5>
+                            <small class="text-muted">Most Active Day</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                <i class="fas fa-headphones fa-2x"></i>
+                            </div>
+                            <h5>{{ patterns.total_sessions }}</h5>
+                            <small class="text-muted">Total Sessions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                            <h5>{{ patterns.avg_sessions_per_day }}</h5>
+                            <small class="text-muted">Avg Sessions/Day</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Top Tracks Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3><i class="fas fa-fire me-2"></i>Your Top Tracks</h3>
+            <a href="{{ url_for('visualizations') }}" class="btn btn-outline-spotify">
+                <i class="fas fa-chart-bar me-1"></i>View All
+            </a>
+        </div>
+        
+        <div class="row g-3">
+            {% for track in top_tracks[:6] %}
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card">
+                    <div class="d-flex align-items-center">
+                        {% if track.album.images %}
+                            <img src="{{ track.album.images[0].url }}" alt="{{ track.name }}" class="track-image me-3">
+                        {% else %}
+                            <div class="bg-secondary track-image d-flex align-items-center justify-content-center me-3">
+                                <i class="fas fa-music text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ track.name }}</h6>
+                            <p class="text-muted mb-1 small">{{ track.artists[0].name }}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: {{ track.popularity }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ track.popularity }}%</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Top Artists Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3><i class="fas fa-microphone me-2"></i>Your Top Artists</h3>
+            <a href="{{ url_for('visualizations') }}" class="btn btn-outline-spotify">
+                <i class="fas fa-chart-bar me-1"></i>View All
+            </a>
+        </div>
+        
+        <div class="row g-3">
+            {% for artist in top_artists[:6] %}
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card">
+                    <div class="d-flex align-items-center">
+                        {% if artist.images %}
+                            <img src="{{ artist.images[0].url }}" alt="{{ artist.name }}" class="track-image me-3">
+                        {% else %}
+                            <div class="bg-secondary track-image d-flex align-items-center justify-content-center me-3">
+                                <i class="fas fa-user text-white"></i>
+                            </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">{{ artist.name }}</h6>
+                            <p class="text-muted mb-1 small">
+                                {% for genre in artist.genres[:2] %}
+                                    {{ genre }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                    <div class="progress-bar bg-danger" style="width: {{ artist.popularity }}%"></div>
+                                </div>
+                                <small class="text-muted">{{ artist.popularity }}%</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Recently Played Section -->
+<div class="row">
+    <div class="col-12">
+        <h3><i class="fas fa-history me-2"></i>Recently Played</h3>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Track</th>
+                        <th>Artist</th>
+                        <th>Album</th>
+                        <th>Played</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in recent_tracks[:10] %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if item.track.album.images %}
+                                    <img src="{{ item.track.album.images[0].url }}" alt="{{ item.track.name }}" class="track-image me-2" style="width: 40px; height: 40px;">
+                                {% endif %}
+                                <span>{{ item.track.name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ item.track.artists[0].name }}</td>
+                        <td>{{ item.track.album.name }}</td>
+                        <td>
+                            <small class="text-muted">
+                                {{ item.played_at.split('T')[0] if item.played_at else 'Unknown' }}
+                            </small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Feature Highlights -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mb-4">
+                    <i class="fas fa-star me-2"></i>Discover More Features
+                </h4>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                            <h5>Mood Analysis</h5>
+                            <p class="text-muted">Discover what your music choices reveal about your personality</p>
+                            <a href="{{ url_for('mood_analysis') }}" class="btn btn-sm btn-outline-spotify">Explore</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-chart-pie fa-3x text-success mb-3"></i>
+                            <h5>Music Insights</h5>
+                            <p class="text-muted">Deep dive into your listening patterns and genre preferences</p>
+                            <a href="{{ url_for('insights') }}" class="btn btn-sm btn-outline-spotify">Explore</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <i class="fas fa-download fa-3x text-warning mb-3"></i>
+                            <h5>Export Data</h5>
+                            <p class="text-muted">Download your music data for further analysis</p>
+                            <a href="{{ url_for('export_data') }}" class="btn btn-sm btn-outline-spotify">Export</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

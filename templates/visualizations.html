@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Visualizations - Sonify{% endblock %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold mb-3">
+        <i class="fas fa-chart-bar text-primary me-3"></i>
+        Your Music Visualizations
+    </h1>
+    <p class="lead">
+        Explore your listening patterns through beautiful, interactive charts and graphs.
+    </p>
+</div>
+
+<!-- Top Tracks Chart -->
+{% if charts.top_tracks %}
+<div class="chart-container">
+    <h3 class="mb-4">
+        <i class="fas fa-fire me-2"></i>Your Top Tracks
+    </h3>
+    <div id="top-tracks-chart" style="height: 500px;"></div>
+</div>
+{% endif %}
+
+<!-- Top Artists Chart -->
+{% if charts.top_artists %}
+<div class="chart-container">
+    <h3 class="mb-4">
+        <i class="fas fa-microphone me-2"></i>Your Top Artists
+    </h3>
+    <div id="top-artists-chart" style="height: 500px;"></div>
+</div>
+{% endif %}
+
+<!-- Listening Time Heatmap -->
+{% if charts.heatmap %}
+<div class="chart-container">
+    <h3 class="mb-4">
+        <i class="fas fa-calendar-alt me-2"></i>Listening Time Heatmap
+    </h3>
+    <p class="text-muted mb-3">
+        Discover when you listen to music most throughout the week. Darker colors indicate more listening activity.
+    </p>
+    <div id="heatmap-chart" style="height: 400px;"></div>
+</div>
+{% endif %}
+
+<!-- Export Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <h4 class="mb-3">
+                    <i class="fas fa-download me-2"></i>Export Your Data
+                </h4>
+                <p class="text-muted mb-4">
+                    Download your visualizations as high-quality images or share them directly on social media.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-outline-spotify" onclick="exportChart('top-tracks-chart', 'top-tracks')">
+                        <i class="fas fa-image me-1"></i>Export Top Tracks
+                    </button>
+                    <button class="btn btn-outline-spotify" onclick="exportChart('top-artists-chart', 'top-artists')">
+                        <i class="fas fa-image me-1"></i>Export Top Artists
+                    </button>
+                    <button class="btn btn-outline-spotify" onclick="exportChart('heatmap-chart', 'heatmap')">
+                        <i class="fas fa-image me-1"></i>Export Heatmap
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    {% if charts.top_tracks %}
+    Plotly.newPlot('top-tracks-chart', JSON.parse('{{ charts.top_tracks | safe }}').data, 
+                   JSON.parse('{{ charts.top_tracks | safe }}').layout, {responsive: true});
+    {% endif %}
+    
+    {% if charts.top_artists %}
+    Plotly.newPlot('top-artists-chart', JSON.parse('{{ charts.top_artists | safe }}').data, 
+                   JSON.parse('{{ charts.top_artists | safe }}').layout, {responsive: true});
+    {% endif %}
+    
+    {% if charts.heatmap %}
+    Plotly.newPlot('heatmap-chart', JSON.parse('{{ charts.heatmap | safe }}').data, 
+                   JSON.parse('{{ charts.heatmap | safe }}').layout, {responsive: true});
+    {% endif %}
+});
+
+// Function to export charts as images
+function exportChart(chartId, filename) {
+    const chart = document.getElementById(chartId);
+    if (chart && chart.data) {
+        Plotly.downloadImage(chart, {
+            format: 'png',
+            filename: `sonify-${filename}-${new Date().toISOString().split('T')[0]}`,
+            height: 600,
+            width: 800
+        });
+    } else {
+        alert('Chart not available for export');
+    }
+}
+
+// Add responsive behavior
+window.addEventListener('resize', function() {
+    {% if charts.top_tracks %}
+    Plotly.Plots.resize('top-tracks-chart');
+    {% endif %}
+    
+    {% if charts.top_artists %}
+    Plotly.Plots.resize('top-artists-chart');
+    {% endif %}
+    
+    {% if charts.heatmap %}
+    Plotly.Plots.resize('heatmap-chart');
+    {% endif %}
+});
+</script>
+{% endblock %} 
